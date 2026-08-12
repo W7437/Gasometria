@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="description" content="DadosUTI — ferramenta rápida para interpretação de gasometria arterial e venosa central." />
+  <title>DadosUTI — Gasometria</title>
+  <link rel="stylesheet" href="style.css?v=2" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <div class="brand">DADOSUTI</div>
+        <h1>Gasometria</h1>
+        <p>Interpretação rápida de gasometria arterial, compensações, anion gap, oxigenação e gasometria venosa central.</p>
+      </div>
+      <div class="local-badge"><span></span> Processamento local</div>
+    </header>
+
+    <div class="privacy-strip">
+      <strong>Sem identificação do paciente.</strong> Esta versão não envia nem armazena os valores informados. O histórico anônimo será conectado posteriormente ao sistema de login do DadosUTI.
+    </div>
+
+    <section class="workspace">
+      <form id="gasForm" class="card input-card" autocomplete="off">
+        <div class="card-title">
+          <div>
+            <span class="step">1</span>
+            <h2>Dados</h2>
+          </div>
+          <button type="button" id="clearBtn" class="ghost">Limpar</button>
+        </div>
+
+        <h3>Gasometria arterial</h3>
+        <div class="grid grid-3">
+          <label>pH<input name="ph" inputmode="decimal" placeholder="7,35" /></label>
+          <label>PaCO₂ <small>mmHg</small><input name="paco2" inputmode="decimal" placeholder="40" /></label>
+          <label>HCO₃⁻ <small>mEq/L</small><input name="hco3" inputmode="decimal" placeholder="24" /></label>
+          <label>PaO₂ <small>mmHg</small><input name="pao2" inputmode="decimal" placeholder="80" /></label>
+          <label>SaO₂ <small>%</small><input name="sao2" inputmode="decimal" placeholder="96" /></label>
+          <label>BE <small>mEq/L</small><input name="be" inputmode="decimal" placeholder="0" /></label>
+          <label>Lactato <small>mmol/L</small><input name="lactate" inputmode="decimal" placeholder="1,2" /></label>
+          <label>FiO₂ <small>%</small><input name="fio2" inputmode="decimal" placeholder="21" /></label>
+        </div>
+
+        <details class="optional" open>
+          <summary>Eletrólitos para Anion Gap <span>opcional</span></summary>
+          <div class="grid grid-3 inner-grid">
+            <label>Na⁺ <small>mEq/L</small><input name="na" inputmode="decimal" placeholder="140" /></label>
+            <label>Cl⁻ <small>mEq/L</small><input name="cl" inputmode="decimal" placeholder="104" /></label>
+            <label>Albumina <small>g/dL</small><input name="albumin" inputmode="decimal" placeholder="4,0" /></label>
+          </div>
+          <p class="hint">Se Na⁺ e Cl⁻ forem informados, o Anion Gap é calculado automaticamente. Albumina permite correção do AG.</p>
+        </details>
+
+        <details class="optional">
+          <summary>Gasometria venosa central <span>opcional</span></summary>
+          <div class="grid grid-2 inner-grid">
+            <label>PvCO₂ <small>mmHg</small><input name="pvco2" inputmode="decimal" placeholder="46" /></label>
+            <label>ScvO₂ <small>%</small><input name="scvo2" inputmode="decimal" placeholder="72" /></label>
+          </div>
+          <p class="hint">O Gap CO₂ é calculado como PvCO₂ − PaCO₂ quando ambos estão disponíveis.</p>
+        </details>
+
+        <div id="validation" class="validation hidden" role="alert"></div>
+        <button type="submit" class="primary">Analisar gasometria</button>
+      </form>
+
+      <section class="card output-card">
+        <div class="card-title">
+          <div>
+            <span class="step">2</span>
+            <h2>Análise</h2>
+          </div>
+          <button type="button" id="copyBtn" class="ghost" disabled>Copiar resumo</button>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+          Preencha pH, PaCO₂ e HCO₃⁻ para iniciar a interpretação ácido-básica.
+        </div>
+
+        <div id="results" class="results hidden">
+          <section class="result-section">
+            <h3>Distúrbio ácido-básico</h3>
+            <div id="primaryResult" class="result-box"></div>
+          </section>
+
+          <section id="compSection" class="result-section hidden">
+            <h3>Compensação</h3>
+            <div id="compResult" class="result-box"></div>
+          </section>
+
+          <section id="agSection" class="result-section hidden">
+            <h3>Anion Gap</h3>
+            <div id="agResult" class="result-box"></div>
+          </section>
+
+          <section id="oxygenSection" class="result-section hidden">
+            <h3>Oxigenação</h3>
+            <div id="oxygenResult" class="result-box"></div>
+          </section>
+
+          <section id="perfusionSection" class="result-section hidden">
+            <h3>Perfusão / gasometria venosa central</h3>
+            <div id="perfusionResult" class="result-box"></div>
+          </section>
+
+          <section class="result-section summary-section">
+            <div class="summary-head">
+              <h3>Texto curto</h3>
+              <span>formato para transcrição no prontuário</span>
+            </div>
+            <textarea id="summaryText" readonly></textarea>
+          </section>
+        </div>
+      </section>
+    </section>
+
+    <details class="card sources-card">
+      <summary>Fontes clínicas e regras utilizadas</summary>
+      <div class="sources">
+        <p><strong>Ácido-base e compensações:</strong> Merck Manual Professional — Acid-Base Disorders.</p>
+        <p><strong>Winter e Anion Gap:</strong> Merck Manual Professional / NCBI.</p>
+        <p><strong>Gap Pv-aCO₂:</strong> Ltaief, Schneider & Liaudet, Critical Care 2021.</p>
+        <p class="disclaimer">Ferramenta de apoio à interpretação. Os resultados devem ser correlacionados com o contexto clínico, tempo de evolução, ventilação, função renal e demais exames.</p>
+      </div>
+    </details>
+  </main>
+
+  <script src="app.js?v=2"></script>
+</body>
+</html>
